@@ -1,5 +1,5 @@
+--- DennyQi 2025 ---
 import Mathlib
-
 namespace PropositionalLogic
 
 inductive PropLogic where
