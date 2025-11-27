@@ -696,20 +696,14 @@ lemma fresh_var_subst_equivalence
       linarith
     simp [AssignmentSubstitution]
     split_ifs with heq
-    · apply The_Coincidence_Lemma_term
-      · intro c hc
-        rfl
-      · intro n f hf
-        rfl
-      · intro x' hx'
-        have h1 := var_le_term_max_var S t x' hx'
-        have h2 : x' < u1 := by linarith
-        have h4 : x' < u2 := by linarith
-        split_ifs with h5 h6
-        · rfl
-        · linarith
-        · linarith
-        · rfl
+    · apply The_Coincidence_Lemma_term <;> try tauto
+      intro x' hx'
+      have h1 := var_le_term_max_var S t x' hx'
+      have h2 : x' < u1 := by linarith
+      have h4 : x' < u2 := by linarith
+      split_ifs with h5 h6 <;> try tauto
+      · linarith
+      · linarith
     · apply ih
       · have hneq1 := max_var_in_sublist_le_cons S (k,t) res
         linarith
