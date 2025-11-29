@@ -1,37 +1,10 @@
 import Mathlib
 import MIL.DennyQi_LogicEbbinghaus.FirstOrderLogic
+import MIL.DennyQi_LogicEbbinghaus.SequentCalculus
 open Classical
 open FirstOrderLogic
 
 set_option maxHeartbeats 9999999
-
-structure Sequent (S : SymbolSet) where
-  antecedent : List (Formula S)
-  succedent : Formula S
-
-inductive Derivable (S : SymbolSet) : ((Sequent S) -> Prop) where
-  | ReflexivityRule (t):
-      Derivable S { antecedent := [], succedent := (Formula.Eq t t) }
-  | AssumptionRule (Γ φ) :
-      φ ∈ Γ → Derivable S { antecedent := Γ, succedent := φ }
-  | AntecedentRule (Γ φ) :
-      ∀ Γ', (Γ' ⊆ Γ) -> (Derivable S { antecedent := Γ', succedent := φ }) → Derivable S { antecedent := Γ, succedent := φ }
-  | ProofByCasesRule (Γ φ) :
-      ∀ ψ, (Derivable S { antecedent := ψ :: Γ, succedent := φ }) → (Derivable S { antecedent := (Formula.Neg ψ) :: Γ, succedent := φ }) → Derivable S { antecedent := Γ, succedent := φ }
-  | ContradictionRule (Γ φ) :
-      ∀ ψ, (Derivable S { antecedent := (Formula.Neg φ) :: Γ, succedent := ψ }) → (Derivable S { antecedent := (Formula.Neg φ) :: Γ, succedent := (Formula.Neg ψ) }) → Derivable S { antecedent := Γ, succedent := φ }
-  | OrRuleForAntecedent (Γ φ ψ ξ) :
-      (Derivable S { antecedent := φ :: Γ, succedent := ξ }) → (Derivable S { antecedent := ψ :: Γ, succedent := ξ }) → Derivable S { antecedent := (Formula.Or φ ψ) :: Γ, succedent := ξ }
-  | OrRuleForSuccedent1 (Γ φ ψ) :
-      (Derivable S { antecedent := Γ, succedent := φ }) → Derivable S { antecedent := Γ, succedent := (Formula.Or φ ψ) }
-  | OrRuleForSuccedent2 (Γ φ ψ) :
-      (Derivable S { antecedent := Γ, succedent := φ }) → Derivable S { antecedent := Γ, succedent := (Formula.Or ψ φ) }
-  | RuleForExistsInSuccedent (Γ x φ t) :
-      (Derivable S { antecedent := Γ, succedent := FormulaSubstitution S φ [(x, t)] }) → Derivable S { antecedent := Γ, succedent := (Formula.Exists x φ) }
-  | RuleForExistsInAntecedent (Γ x y φ ψ) :
-      (∀ ξ ∈ Γ, y ∉ Freevar S ξ) -> (y ∉ Freevar S (Formula.Exists x φ)) → (y ∉ Freevar S ψ) -> (Derivable S { antecedent := (FormulaSubstitution S φ [(x, Term.Var y)]) :: Γ, succedent := ψ }) → Derivable S { antecedent := (Formula.Exists x φ) :: Γ, succedent := ψ }
-  | SubstitutionRuleForEquality (Γ x t t' φ) :
-      (Derivable S { antecedent := Γ, succedent := (FormulaSubstitution S φ [(x,t)]) }) → Derivable S { antecedent := (Formula.Eq t t') :: Γ, succedent := (FormulaSubstitution S φ [(x,t')]) }
 
 def IsValid (S : SymbolSet) (φ : Formula S) : Prop :=
   ∀ (I : Interp S), FormulaEval S I φ
@@ -44,8 +17,6 @@ def IsSatisfiable (S : SymbolSet) (φ : Formula S) : Prop :=
 
 def Consequence (S : SymbolSet) (φ ψ : Formula S) : Prop :=
   ∀ (I : Interp S), FormulaEval S I φ → FormulaEval S I ψ
-
-def FormulaSet (S : SymbolSet) := (Formula S) → Prop
 
 def Consequence_set (S : SymbolSet) (Φ : FormulaSet S) (ψ : Formula S) : Prop :=
   ∀ (I : Interp S), (∀ (φ : Formula S), (Φ φ) → (FormulaEval S I φ)) → FormulaEval S I ψ
@@ -310,3 +281,22 @@ theorem Soundness_of_Sequent_Calculus
     have h6 := h2 h5
     rw [The_Substitution_Lemma_formula] at h6
     tauto
+
+theorem Soundness_of_Sequent_Calculus_set
+  (S : SymbolSet)
+  (Φ : FormulaSet S)
+  (φ : Formula S)
+  (hder : Derivable_set S Φ φ)
+  :
+  (Consequence_set S Φ φ)
+:= by
+  dsimp [Derivable_set, Consequence_set] at *
+  rcases hder with ⟨Φ₀, ⟨h1, h2⟩⟩
+  have hs := Soundness_of_Sequent_Calculus S { antecedent := Φ₀, succedent := φ } h2
+  simp [Consequence_set] at hs
+  intro I h3
+  specialize hs I
+  apply hs
+  intro ζ h4
+  apply h3
+  tauto

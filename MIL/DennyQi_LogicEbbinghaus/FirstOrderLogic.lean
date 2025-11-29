@@ -23,13 +23,15 @@ def Formula.Or {S : SymbolSet} (φ ψ : Formula S) : Formula S :=
   Formula.Neg (Formula.And (Formula.Neg φ) (Formula.Neg ψ))
 
 def Formula.Imply {S : SymbolSet} (φ ψ : Formula S) : Formula S :=
-  Formula.Neg (Formula.And φ (Formula.Neg ψ))
+  Formula.Or (Formula.Neg φ) ψ
 
 def Formula.Iff {S : SymbolSet} (φ ψ : Formula S) : Formula S :=
   Formula.And (Formula.Imply φ ψ) (Formula.Imply ψ φ)
 
 def Formula.Exists {S : SymbolSet} (x : Nat) (φ : Formula S) : Formula S :=
   Formula.Neg (Formula.Forall x (Formula.Neg φ))
+
+abbrev FormulaSet (S : SymbolSet) := Set (Formula S)
 
 def VarOfTerm (S : SymbolSet) (t : Term S) : List Nat :=
   match t with
