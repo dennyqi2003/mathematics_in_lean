@@ -22,6 +22,7 @@
 	".devcontainer": true,
 	".github": true
     },
+    "editor.wordWrap": "on",
     "editor.minimap.enabled": false,
     "editor.acceptSuggestionOnEnter": "off",
     "editor.quickSuggestions.comments": true,
@@ -36,5 +37,9 @@
     "files.trimTrailingWhitespace": true,
     "files.trimFinalNewlines": true,
     "lean4.infoview.emphasizeFirstGoal": true,
-    "lean4.infoview.showExpectedType": false
+    "lean4.infoview.showExpectedType": false,
+    "lean4.serverPath": "/Users/dennyqi/.elan/toolchains/leanprover--lean4---v4.17.0/bin/lean",
+    "lean4.serverEnv": {
+        "PATH": "/Users/dennyqi/.elan/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+    }
 }
